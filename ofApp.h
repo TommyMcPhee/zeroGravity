@@ -36,4 +36,6 @@ class ofApp : public ofBaseApp{
 		float height;
 		ofVec2f window;
 		
+		ofVec4f translate;
+		ofVec4f color;
 };

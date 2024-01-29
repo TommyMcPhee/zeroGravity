@@ -7,7 +7,8 @@ out vec4 outputColor;
 uniform float feedback;
 uniform vec2 window;
 uniform vec2 oscillators;
-uniform float translate;
+uniform vec4 color;
+uniform vec4 translate;
 float pixels;
 
 float powerScale(float input){
@@ -26,6 +27,10 @@ float scaleTension(float tension){
 
 float unipolar(float input){
     return input * 0.5 + 0.5;
+}
+
+float bipolar(float input){
+    return (input - 0.5) * 2.0;
 }
 
 float lfo(float phase, float skew, float depth, float offset, float tension){
@@ -48,6 +53,10 @@ float oscillate(float phase, float skew, float depth, float frequency, float ten
 
 float averageTwo(float a, float b){
     return (a + b) / 2.0;
+}
+
+float normalizedAdd(float a, float b){
+    return (a + b) / (1.0 + b);
 }
 
 void main()
@@ -91,13 +100,18 @@ void main()
     float rOutput = xROutput * yROutput;
     float gOutput = xGOutput * yGOutput;
     float bOutput = xBOutput * yBOutput;
-    vec4 feedbackColor = texture2DRect(tex0, texCoordVarying);
+    float wOutput = pow(rOutput * gOutput * bOutput, 0.25);
+    vec2 reposition = vec2(bipolar(1.0 - c) * translate.x, bipolar(1.0 - d) * translate.y);
+    vec2 resize = vec2(powerScale(1.0 - a) * translate.z, powerScale(1.0 - b) * translate.w);
+    vec4 feedbackColor = texture2DRect(tex0, texCoordVarying * resize + reposition);
     float rFeedback = (1.0 - rOutput) * feedbackColor.r;
     float gFeedback = (1.0 - gOutput) * feedbackColor.g;
     float bFeedback = (1.0 - bOutput) * feedbackColor.b;
-    float red = averageTwo(rOutput, rFeedback);
-    float green = averageTwo(gOutput, gFeedback);
-    float blue = averageTwo(bOutput, bFeedback);
+    float wFeedback = (1.0 - wOutput) * pow(feedbackColor.r * feedbackColor.g * feedbackColor.b, 0.25);
+    float white = averageTwo(wOutput, wFeedback) * color.a;
+    float red = averageTwo(normalizedAdd(rOutput, white), rFeedback) * color.r;
+    float green = averageTwo(normalizedAdd(gOutput, white), gFeedback) * color.g;
+    float blue = averageTwo(normalizedAdd(bOutput, white), bFeedback) * color.b;
     /*
     float red = 0.0;
     float green = 1.0;

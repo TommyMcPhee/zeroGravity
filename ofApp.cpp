@@ -33,6 +33,8 @@ void ofApp::audioOut(ofSoundBuffer &buffer) {
 		oscillatorASample = unipolar(oscillatorA.getSample());
 		oscillatorBSample = unipolar(oscillatorB.getSample());
 		oscillators.set(oscillatorASample, oscillatorBSample);
+		color.set(1.0, 1.0, 1.0, 1.0);
+		translate.set(oscillatorASample * -1.0, oscillatorBSample * -1.0, oscillatorASample + oscillatorBSample, oscillatorASample - oscillatorBSample);
 		//feedback += feedbackIncrement;
 	}
 }
@@ -73,4 +75,6 @@ void ofApp::setUniforms() {
 	shader.setUniform2f("window", window);
 	shader.setUniform2f("oscillators", oscillators);
 	shader.setUniform1f("feedback", feedback);
+	shader.setUniform4f("translate", translate);
+	shader.setUniform4f("color", color);
 }
