@@ -21,7 +21,24 @@ void ofApp::draw(){
 
 //--------------------------------------------------------------
 void ofApp::keyReleased(int key){
-
+	if(key > 41 && key < 57 && key != 44 && key != 46){
+		if (key < 47) {
+			sectionIndex = key - 48;
+		}
+		if (key == 47) {
+			sectionIndex = 10;
+		}
+		if (key == 45) {
+			sectionIndex = 11;
+		}
+		if (key == 43) {
+			sectionIndex = 12;
+		}
+		if (key == 42) {
+			sectionIndex = 13;
+		}
+	}
+	cout << key << endl;
 }
 
 void ofApp::ofSoundStreamSetup(ofSoundStreamSettings& settings) {

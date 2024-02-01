@@ -38,4 +38,6 @@ class ofApp : public ofBaseApp{
 		
 		ofVec4f translate;
 		ofVec4f color;
+
+		unsigned int sectionIndex;
 };
