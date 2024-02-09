@@ -14,9 +14,23 @@ class ofApp : public ofBaseApp{
 
 		void audioSetup();
 		void videoSetup();
+		void sectionSetup();
 		inline float unipolar(float input);
 		void refresh();
 		void setUniforms();
+		void beginSection();
+		array<array<float, 8>, 14> sectionValues = {
+			{0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 1.0},
+			{0.0, 1.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0},
+			{0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0},
+			{1.0, 1.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0},
+			{1.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0},
+			{0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0},
+			{0.0, 1.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0},
+			{1.0, 1.0, 1.0, 0.0, 1.0, 
+
+
+
 		ofSoundStreamSettings settings;
 		ofSoundStream stream;
 		const int sampleRate = 48000;
@@ -35,9 +49,8 @@ class ofApp : public ofBaseApp{
 		float width;
 		float height;
 		ofVec2f window;
-		
-		ofVec4f translate;
 		ofVec4f color;
+		ofVec4f translate;
 
 		unsigned int sectionIndex;
 };

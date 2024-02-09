@@ -5,6 +5,7 @@ void ofApp::setup(){
 	feedback = 1.0;
 	audioSetup();
 	videoSetup();
+	sectionSetup();
 }
 
 //--------------------------------------------------------------
@@ -37,6 +38,7 @@ void ofApp::keyReleased(int key){
 		if (key == 42) {
 			sectionIndex = 13;
 		}
+		beginSection();
 	}
 	cout << key << endl;
 }
@@ -76,6 +78,10 @@ void ofApp::videoSetup() {
 	buffer.end();
 }
 
+void ofApp::sectionSetup() {
+
+}
+
 inline float ofApp::unipolar(float input) {
 	return input * 0.5 + 0.5;
 }
@@ -94,4 +100,10 @@ void ofApp::setUniforms() {
 	shader.setUniform1f("feedback", feedback);
 	shader.setUniform4f("translate", translate);
 	shader.setUniform4f("color", color);
+}
+
+void ofApp::beginSection() {
+	array<float, 8> currentSectionValues = sectionValues[sectionIndex];
+	color.set(currentSectionValues[0], currentSectionValues[1], currentSectionValues[2], currentSectionValues[3]);
+	translate.set(currentSectionValues[4], currentSectionValues[5], currentSectionValues[6], currentSectionValues[7]);
 }
