@@ -17,20 +17,35 @@ class ofApp : public ofBaseApp{
 		void sectionSetup();
 		inline float unipolar(float input);
 		void refresh();
+		void setVectors();
+		float transitionValue(int index, float currentValue);
+		float bellFade(float currentValue);
+		float decrementFade(float currentValue);
+		float incrementFade(float currentValue);
+		float inverseBellFade(float currentValue);
+		float randomIncrement(float bias, float maximum);
 		void setUniforms();
 		void beginSection();
-		array<array<float, 8>, 14> sectionValues = {
-			{0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 1.0},
-			{0.0, 1.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0},
-			{0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0},
-			{1.0, 1.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0},
-			{1.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0},
-			{0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0},
-			{0.0, 1.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0},
-			{1.0, 1.0, 1.0, 0.0, 1.0, 
-
-
-
+		array<array<bool, 8>, 14> sectionValues = { {
+			{false, false, false, true, true, true, false, true},
+			{false, true, false, true, true, true, false, false},
+			{false, true, false, false, true, true, true, false},
+			{true, true, false, false, false, true, true, false},
+			{true, true, false, true, false, true, false, false},
+			{false, true, true, true, true, false, false, false},
+			{false, true, true, false, true, false, true, false},
+			{true, true, true, false, false, true, false, false},
+			{false, false, true, true, true, false, false, true},
+			{true, false, true, true, false, false, false, true},
+			{true, false, true, false, false, true, false, true},
+			{true, false, false, true, false, false, true, true},
+			{true, false, false, false, false, true, true, true},
+			{false, false, true, false, true, true, false, true} } };
+		array<bool, 8> defaultSectionValues;
+		array<bool, 8> previousSectionValues;
+		array<bool, 8> nextSectionValues;
+		array<bool, 8> currentSectionValues;
+		array<float, 8> currentValues;
 		ofSoundStreamSettings settings;
 		ofSoundStream stream;
 		const int sampleRate = 48000;
@@ -41,10 +56,12 @@ class ofApp : public ofBaseApp{
 		const float length = 210.0;
 		float feedback;
 		float feedbackIncrement;
+		float transitionIncrement;
 		ofFbo buffer;
 		ofShader shader;
 		float oscillatorASample;
 		float oscillatorBSample;
+		float ring;
 		ofVec2f oscillators;
 		float width;
 		float height;
