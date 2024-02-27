@@ -5,15 +5,14 @@ uniform sampler2DRect tex0;
 in vec2 texCoordVarying;
 out vec4 outputColor;
 uniform float feedback;
-uniform vec2 window;
-uniform vec2 oscillators;
+uniform vec3 window;
+uniform vec4 oscillators;
 uniform vec4 color;
 uniform vec4 translate;
-float pixels;
 
-float powerScale(float input){
-    float scale = pow(pixels, 0.25);
-    return pow(input, 1.0 + pow(scale, 1.0 / pow(scale, 0.5))) * scale;
+float powerScale(float signal){
+    float scale = pow(window.z, 0.25);
+    return pow(signal, 1.0 + pow(scale, 1.0 / pow(scale, 0.5))) * scale;
 }
 
 float scalePhase(float phase, float skew){
@@ -25,12 +24,12 @@ float scaleTension(float tension){
     return pow(tension, 2.0) * 2.0;
 }
 
-float unipolar(float input){
-    return input * 0.5 + 0.5;
+float unipolar(float signal){
+    return signal * 0.5 + 0.5;
 }
 
-float bipolar(float input){
-    return (input - 0.5) * 2.0;
+float bipolar(float signal){
+    return (signal - 0.5) * 2.0;
 }
 
 float lfo(float phase, float skew, float depth, float offset, float tension){
@@ -44,7 +43,7 @@ float lfo(float phase, float skew, float depth, float offset, float tension){
 
 float oscillate(float phase, float skew, float depth, float frequency, float tension){
     float scaledPhase = scalePhase(phase, skew);
-    float scaledFrequency = pow(frequency, 0.5) * pixels;
+    float scaledFrequency = pow(frequency, 0.5) * window.z;
     float sine = sin(scaledPhase * TWO_PI * frequency);
     float scaledTension = scaleTension(tension);
     float scaledDepth = powerScale(depth);
@@ -61,8 +60,7 @@ float normalizedAdd(float a, float b){
 
 void main()
 {
-    pixels = window.x * window.y;
-    vec2 normalized = gl_FragCoord.xy / window;
+    vec2 normalized = gl_FragCoord.xy / window.xy;
     float a = oscillators.x;
     float b = oscillators.y;
     float c = (a + b) / 2.0;

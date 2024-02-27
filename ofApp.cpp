@@ -1,7 +1,7 @@
 #include "ofApp.h"
 
 //--------------------------------------------------------------
-void ofApp::setup(){
+void ofApp::setup() {
 	feedback = 1.0;
 	audioSetup();
 	videoSetup();
@@ -9,7 +9,7 @@ void ofApp::setup(){
 }
 
 //--------------------------------------------------------------
-void ofApp::draw(){
+void ofApp::draw() {
 	refresh();
 	buffer.begin();
 	shader.begin();
@@ -21,8 +21,8 @@ void ofApp::draw(){
 }
 
 //--------------------------------------------------------------
-void ofApp::keyReleased(int key){
-	if(key > 41 && key < 57 && key != 44 && key != 46){
+void ofApp::keyReleased(int key) {
+	if (key > 41 && key < 57 && key != 44 && key != 46) {
 		if (key < 47) {
 			sectionIndex = key - 48;
 		}
@@ -47,21 +47,34 @@ void ofApp::ofSoundStreamSetup(ofSoundStreamSettings& settings) {
 
 }
 
-void ofApp::audioOut(ofSoundBuffer &buffer) {
+void ofApp::audioOut(ofSoundBuffer& buffer) {
 	for (int a = 0; a < bufferSize; a++) {
 		oscillatorASample = unipolar(oscillatorA.getSample());
 		oscillatorBSample = unipolar(oscillatorB.getSample());
 		ring = oscillatorASample * oscillatorBSample;
-		oscillators.set(oscillatorASample, oscillatorBSample);
-		color.set(1.0, 1.0, 1.0, 1.0);
-		translate.set(oscillatorASample * -1.0, oscillatorBSample * -1.0, oscillatorASample + oscillatorBSample, oscillatorASample - oscillatorBSample);
+		frameRate = ofGetFrameRate();
+		oscillatorC.setFreq(getFeedbackFrequency(oscillatorDSample));
+		oscillatorD.setFreq(getFeedbackFrequency(oscillatorCSample));
+		oscillators.set(oscillatorASample, oscillatorBSample, oscillatorCSample, oscillatorDSample);	
+		color.set(transitionValue(0), transitionValue(1), transitionValue(2), transitionValue(3));
+		translate.set(transitionValue(4), transitionValue(5), transitionValue(6), transitionValue(7));
+		for (int b = 0; b < 2; b++) {
+
+		}
 		//feedback += feedbackIncrement;
 	}
+}
+
+float ofApp::getFeedbackFrequency(float sample) {
+	float absRing = abs(ring);
+	return frameRate * (sample + absRing) / (1.0 + absRing);
 }
 
 void ofApp::audioSetup() {
 	oscillatorA = sinOsc(1.0 / length, 0.0, 1.0, sampleRate);
 	oscillatorB = sinOsc(1.6180339887 / length, 0.0, 1.0, sampleRate);
+	oscillatorC = sinOsc(frameRate, 0.0, 1.0, sampleRate);
+	oscillatorD = sinOsc(frameRate, 0.0, 1.0, sampleRate);
 	//feedbackIncrement = 1.0 / (length * (float)sampleRate);
 	settings.setOutListener(this);
 	settings.sampleRate = sampleRate;
@@ -91,16 +104,17 @@ void ofApp::refresh() {
 	width = (float)ofGetWidth();
 	height = (float)ofGetHeight();
 	buffer.allocate(width, height);
-	window.set(width, height);
+	window.set(width, height, width * height);
 	ofClear(0, 0, 0, 255);
 	setVectors();
 }
 
 void ofApp::setVectors() {
-
+	color.set(transitionValue(0), transitionValue(1), transitionValue(2), transitionValue(3));
+	translate.set(transitionValue(4), transitionValue(5), transitionValue(6), transitionValue(7));
 }
 
-float ofApp::transitionValue(int index, float currentValue) {
+float ofApp::transitionValue(int index) {
 	bool previous = previousSectionValues[index];
 	bool next = nextSectionValues[index];
 	if (!currentSectionValues[index]) {
@@ -108,51 +122,28 @@ float ofApp::transitionValue(int index, float currentValue) {
 	}
 	else {
 		if (previous && next) {
-			bellFade(currentValue);
+			return transitionalValues[0];
 		}
 		else {
 			if (previous) {
-				decrementFade(currentValue);
+				return transitionalValues[1];
 			}
 			else {
 				if (next) {
-					incrementFade(currentValue);
+					return transitionalValues[2];
 				}
 				else {
-					inverseBellFade(currentValue);
+					return transitionalValues[3];
 				}
 			}
 		}
 	}
 }
 
-float ofApp::bellFade(float currentValue) {
-	return 0;
-}
-
-float ofApp::incrementFade(float currentValue) {
-	float inverseCurrentValue = 1.0 - currentValue;
-	float newValue = currentValue + randomIncrement(inverseCurrentValue, inverseCurrentValue);
-	return newValue;
-}
-
-float ofApp::decrementFade(float currentValue) {
-	float inverseCurrentValue = 1.0 - currentValue;
-	return currentValue - randomIncrement(inverseCurrentValue, inverseCurrentValue);
-}
-
-float ofApp::inverseBellFade(float currentValue) {
-	return 0;
-}
-
-float ofApp::randomIncrement(float bias, float maximum) {
-	return pow(maximum * (ring + bias) / (1.0 + bias), 10.0);
-}
-
 void ofApp::setUniforms() {
-	shader.setUniform2f("window", window);
-	shader.setUniform2f("oscillators", oscillators);
-	shader.setUniform1f("feedback", feedback);
+	shader.setUniform3f("window", window);
+	shader.setUniform4f("oscillators", oscillators);
+	//shader.setUniform1f("feedback", feedback);
 	shader.setUniform4f("translate", translate);
 	shader.setUniform4f("color", color);
 }
@@ -171,6 +162,4 @@ void ofApp::beginSection() {
 		nextSectionValues = sectionValues[sectionIndex + 1];
 	}
 	currentSectionValues = sectionValues[sectionIndex];
-	//color.set(currentSectionValues[0], currentSectionValues[1], currentSectionValues[2], currentSectionValues[3]);
-	//translate.set(currentSectionValues[4], currentSectionValues[5], currentSectionValues[6], currentSectionValues[7]);
 }
