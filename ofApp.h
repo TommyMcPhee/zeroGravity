@@ -13,6 +13,8 @@ public:
 	void audioOut(ofSoundBuffer& buffer);
 	float getFeedbackFrequency(float sample);
 	void audioSetup();
+	float getRandomFrequency();
+	float getRandomPhase();
 	void videoSetup();
 	void sectionSetup();
 	inline float unipolar(float input);
@@ -51,7 +53,8 @@ public:
 	sinOsc oscillatorB;
 	sinOsc oscillatorC;
 	sinOsc oscillatorD;
-	const float length = 210.0;
+	float fundamentalFrequency;
+	//const float length = 210.0;
 	float feedback;
 	float feedbackIncrement;
 	float transitionIncrement;

@@ -55,7 +55,9 @@ void ofApp::audioOut(ofSoundBuffer& buffer) {
 		frameRate = ofGetFrameRate();
 		oscillatorC.setFreq(getFeedbackFrequency(oscillatorDSample));
 		oscillatorD.setFreq(getFeedbackFrequency(oscillatorCSample));
-		oscillators.set(oscillatorASample, oscillatorBSample, oscillatorCSample, oscillatorDSample);	
+		oscillatorCSample = oscillatorC.getSample();
+		oscillatorDSample = oscillatorD.getSample();
+		oscillators.set(oscillatorASample, oscillatorBSample, oscillatorCSample, oscillatorDSample);
 		color.set(transitionValue(0), transitionValue(1), transitionValue(2), transitionValue(3));
 		translate.set(transitionValue(4), transitionValue(5), transitionValue(6), transitionValue(7));
 		for (int b = 0; b < 2; b++) {
@@ -71,10 +73,12 @@ float ofApp::getFeedbackFrequency(float sample) {
 }
 
 void ofApp::audioSetup() {
-	oscillatorA = sinOsc(1.0 / length, 0.0, 1.0, sampleRate);
-	oscillatorB = sinOsc(1.6180339887 / length, 0.0, 1.0, sampleRate);
-	oscillatorC = sinOsc(frameRate, 0.0, 1.0, sampleRate);
-	oscillatorD = sinOsc(frameRate, 0.0, 1.0, sampleRate);
+	frameRate = ofGetFrameRate();
+	fundamentalFrequency = (0.2 * ofRandomf() + 0.2) / frameRate;
+	oscillatorA = sinOsc(fundamentalFrequency, getRandomPhase(), 1.0, sampleRate);
+	oscillatorB = sinOsc(1.6180339887 / fundamentalFrequency, getRandomPhase(), 1.0, sampleRate);
+	oscillatorC = sinOsc(getRandomFrequency(), getRandomPhase(), 1.0, sampleRate);
+	oscillatorD = sinOsc(getRandomFrequency(), getRandomPhase(), 1.0, sampleRate);
 	//feedbackIncrement = 1.0 / (length * (float)sampleRate);
 	settings.setOutListener(this);
 	settings.sampleRate = sampleRate;
@@ -82,6 +86,14 @@ void ofApp::audioSetup() {
 	settings.numOutputChannels = channels;
 	settings.setApi(ofSoundDevice::Api::MS_DS);
 	stream.setup(settings);
+}
+
+float ofApp::getRandomFrequency() {
+	return ofRandomf() * frameRate;
+}
+
+float ofApp::getRandomPhase() {
+	return ofRandomf() * TWO_PI;
 }
 
 void ofApp::videoSetup() {
@@ -149,6 +161,8 @@ void ofApp::setUniforms() {
 }
 
 void ofApp::beginSection() {
+	oscillatorC.setFreq(getRandomFrequency());
+	oscillatorD.setFreq(getRandomFrequency());
 	if (sectionIndex == 0) {
 		previousSectionValues = defaultSectionValues;
 	}
