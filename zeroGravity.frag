@@ -98,22 +98,19 @@ void main()
     float rOutput = xROutput * yROutput;
     float gOutput = xGOutput * yGOutput;
     float bOutput = xBOutput * yBOutput;
-    float wOutput = pow(rOutput * gOutput * bOutput, 0.25);
+    float wOutput = pow(rOutput * gOutput * bOutput, 0.25) * color.a;
     vec2 reposition = vec2(bipolar(1.0 - c) * translate.x, bipolar(1.0 - d) * translate.y);
     vec2 resize = vec2(powerScale(1.0 - a) * translate.z, powerScale(1.0 - b) * translate.w);
     vec4 feedbackColor = texture2DRect(tex0, texCoordVarying * resize + reposition);
-    float rFeedback = (1.0 - rOutput) * feedbackColor.r;
-    float gFeedback = (1.0 - gOutput) * feedbackColor.g;
-    float bFeedback = (1.0 - bOutput) * feedbackColor.b;
-    float wFeedback = (1.0 - wOutput) * pow(feedbackColor.r * feedbackColor.g * feedbackColor.b, 0.25);
-    float white = averageTwo(wOutput, wFeedback) * color.a;
-    float red = averageTwo(normalizedAdd(rOutput, white), rFeedback) * color.r;
-    float green = averageTwo(normalizedAdd(gOutput, white), gFeedback) * color.g;
-    float blue = averageTwo(normalizedAdd(bOutput, white), bFeedback) * color.b;
-    /*
-    float red = 0.0;
-    float green = 1.0;
-    float blue = 0.0;
-    */
-    outputColor = vec4(red, green, blue, 1.0);
+    float rFeedback = feedbackColor.r * pow(color.r * (1.0 - color.r), 0.5);
+    float gFeedback = feedbackColor.g * pow(color.g * (1.0 - color.g), 0.5);
+    float bFeedback = feedbackColor.b * pow(color.b * (1.0 - color.b), 0.5);
+    float wFeedback = pow(feedbackColor.r * feedbackColor.g * feedbackColor.b, 0.25);
+    float white = averageTwo(wOutput, wFeedback);
+    float red = normalizedAdd(normalizedAdd(rOutput * color.r, white), rFeedback);
+    float green = normalizedAdd(normalizedAdd(gOutput * color.g, white), gFeedback);
+    float blue = normalizedAdd(normalizedAdd(bOutput * color.b, white), bFeedback);
+    vec3 newColor = vec3(red, green, blue);
+    //vec3 filterColor = feedbackColor.rgb;
+    outputColor = vec4(newColor, 1.0);
 }

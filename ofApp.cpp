@@ -2,7 +2,7 @@
 
 //--------------------------------------------------------------
 void ofApp::setup() {
-	feedback = 1.0;
+	sampleCount = 0.0;
 	audioSetup();
 	videoSetup();
 	sectionSetup();
@@ -23,7 +23,7 @@ void ofApp::draw() {
 //--------------------------------------------------------------
 void ofApp::keyReleased(int key) {
 	if (key > 41 && key < 57 && key != 44 && key != 46) {
-		if (key < 47) {
+		if (key > 47) {
 			sectionIndex = key - 48;
 		}
 		if (key == 47) {
@@ -40,7 +40,6 @@ void ofApp::keyReleased(int key) {
 		}
 		beginSection();
 	}
-	cout << key << endl;
 }
 
 void ofApp::ofSoundStreamSetup(ofSoundStreamSettings& settings) {
@@ -48,38 +47,66 @@ void ofApp::ofSoundStreamSetup(ofSoundStreamSettings& settings) {
 }
 
 void ofApp::audioOut(ofSoundBuffer& buffer) {
+	cout << transitionalSeed << endl;
 	for (int a = 0; a < bufferSize; a++) {
-		oscillatorASample = unipolar(oscillatorA.getSample());
-		oscillatorBSample = unipolar(oscillatorB.getSample());
+		checkReset();
+		sampleCount++;
+		oscillatorASample = oscillatorA.getSample();
+		oscillatorBSample = oscillatorB.getSample();
+		oscillatorAUnipolar = unipolar(oscillatorASample);
+		oscillatorBUnipolar = unipolar(oscillatorBSample);
 		ring = oscillatorASample * oscillatorBSample;
-		frameRate = ofGetFrameRate();
-		oscillatorC.setFreq(getFeedbackFrequency(oscillatorDSample));
+		ringTotal += ring;
+		ringAverage = ring / sampleCount;
+		transitionIncrement = ringAverage / (frameRate * 4.0);
+		/*
+		oscillatorC.setFreq(getFeedbackFrequency(-1.0 * oscillatorDSample));
 		oscillatorD.setFreq(getFeedbackFrequency(oscillatorCSample));
 		oscillatorCSample = oscillatorC.getSample();
 		oscillatorDSample = oscillatorD.getSample();
-		oscillators.set(oscillatorASample, oscillatorBSample, oscillatorCSample, oscillatorDSample);
+		oscillatorCDSample = (oscillatorCSample + oscillatorDSample) / 2.0;
+		sampleCDTotal += oscillatorCDSample;
+		sampleCDAverage = sampleCDTotal / sampleCount;
+		*/
+		transitionalSeed -= transitionIncrement * transitionalSeed;
+		transitionalValues[1] = transitionalSeed;
+		transitionalValues[2] = 1.0 - transitionalValues[1];
+		transitionalValues[3] = transitionalValues[1] * transitionalValues[2];
+		transitionalValues[0] = 1.0 - transitionalValues[3];
+		oscillators.set(oscillatorAUnipolar, oscillatorBSample, oscillatorCSample, oscillatorDSample);
 		color.set(transitionValue(0), transitionValue(1), transitionValue(2), transitionValue(3));
 		translate.set(transitionValue(4), transitionValue(5), transitionValue(6), transitionValue(7));
 		for (int b = 0; b < 2; b++) {
 
 		}
-		//feedback += feedbackIncrement;
+		feedback += feedbackIncrement;
+		sampleCount += feedbackIncrement;
+	}
+}
+
+void ofApp::checkReset() {
+	if (reset) {
+		transitionalSeed = 1.0;
+		sampleCount = 0.0;
+		reset = false;
 	}
 }
 
 float ofApp::getFeedbackFrequency(float sample) {
 	float absRing = abs(ring);
-	return frameRate * (sample + absRing) / (1.0 + absRing);
+	return (frameRate * ofSign(sample) * pow((abs(sample) + absRing) / (1.0 + absRing), 2.0)) + std::numeric_limits<float>::min();
 }
 
 void ofApp::audioSetup() {
+	minimumFloat = std::numeric_limits<float>::min();
 	frameRate = ofGetFrameRate();
 	fundamentalFrequency = (0.2 * ofRandomf() + 0.2) / frameRate;
 	oscillatorA = sinOsc(fundamentalFrequency, getRandomPhase(), 1.0, sampleRate);
 	oscillatorB = sinOsc(1.6180339887 / fundamentalFrequency, getRandomPhase(), 1.0, sampleRate);
 	oscillatorC = sinOsc(getRandomFrequency(), getRandomPhase(), 1.0, sampleRate);
 	oscillatorD = sinOsc(getRandomFrequency(), getRandomPhase(), 1.0, sampleRate);
-	//feedbackIncrement = 1.0 / (length * (float)sampleRate);
+	feedbackIncrement = 1.0 / (float)sampleRate;
+	transitionalSeed = 1.0;
 	settings.setOutListener(this);
 	settings.sampleRate = sampleRate;
 	settings.bufferSize = bufferSize;
@@ -113,15 +140,16 @@ inline float ofApp::unipolar(float input) {
 }
 
 void ofApp::refresh() {
+	frameRate = ofGetFrameRate();
 	width = (float)ofGetWidth();
 	height = (float)ofGetHeight();
 	buffer.allocate(width, height);
-	window.set(width, height, width * height);
 	ofClear(0, 0, 0, 255);
 	setVectors();
 }
 
 void ofApp::setVectors() {
+	window.set(width, height, width * height);
 	color.set(transitionValue(0), transitionValue(1), transitionValue(2), transitionValue(3));
 	translate.set(transitionValue(4), transitionValue(5), transitionValue(6), transitionValue(7));
 }
@@ -158,9 +186,11 @@ void ofApp::setUniforms() {
 	//shader.setUniform1f("feedback", feedback);
 	shader.setUniform4f("translate", translate);
 	shader.setUniform4f("color", color);
+	//cout << color.x << color.y << color.z << endl;
 }
 
 void ofApp::beginSection() {
+	reset = true;
 	oscillatorC.setFreq(getRandomFrequency());
 	oscillatorD.setFreq(getRandomFrequency());
 	if (sectionIndex == 0) {
