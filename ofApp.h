@@ -53,12 +53,18 @@ public:
 	float minimumFloat;
 	sinOsc oscillatorA;
 	sinOsc oscillatorB;
-	sinOsc oscillatorC;
-	sinOsc oscillatorD;
+	/*
+	sinOsc fOscillator;
+	sinOsc cOscillator;
+	sinOsc gOscillator;
+	sinOsc dOscillator;
+	sinOsc aOscillator;
+	sinOsc eOscillator;
+	sinOsc bOscillator;
+	*/
 	float fundamentalFrequency;
 	bool reset = false;
 	float sampleCount;
-	//const float length = 210.0;
 	float feedback;
 	float feedbackIncrement;
 	float transitionIncrement = 0.000001;
@@ -70,8 +76,6 @@ public:
 	float oscillatorBUnipolar;
 	float ringTotal;
 	float ringAverage;
-	//float oscillatorABSample;
-	//float sampleABAverage;
 	float oscillatorCSample;
 	float oscillatorDSample;
 	float oscillatorCDSample;
@@ -80,7 +84,7 @@ public:
 	float transitionalSeed;
 	float ring;
 	float frameRate;
-	ofVec4f oscillators;
+	ofVec2f oscillators;
 	float width;
 	float height;
 	ofVec3f window;
