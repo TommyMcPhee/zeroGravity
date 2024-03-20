@@ -91,6 +91,13 @@ void ofApp::audioSetup() {
 	fundamentalFrequency = 1.0 / frameRate;
 	oscillatorA = sinOsc(fundamentalFrequency, getRandomPhase(), 1.0, sampleRate);
 	oscillatorB = sinOsc(fundamentalFrequency / 1.6180339887, getRandomPhase(), 1.0, sampleRate);
+	fOscillator = sinOsc(5.457, 0.0, 0.0, sampleRate);
+	cOscillator = sinOsc(16.352, 0.0, 0.0, sampleRate);
+	gOscillator = sinOsc(48.999, 0.0, 0.0, sampleRate);
+	dOscillator = sinOsc(293.665, 0.0, 0.0, sampleRate);
+	aOscillator = sinOsc(880.0, 0.0, 0.0, sampleRate);
+	eOscillator = sinOsc(2637.02, 0.0, 0.0, sampleRate);
+	bOscillator = sinOsc(7902.133, 0.0, 0.0, sampleRate);
 	feedbackIncrement = 1.0 / (float)sampleRate;
 	transitionalSeed = 1.0;
 	settings.setOutListener(this);

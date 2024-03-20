@@ -53,7 +53,6 @@ public:
 	float minimumFloat;
 	sinOsc oscillatorA;
 	sinOsc oscillatorB;
-	/*
 	sinOsc fOscillator;
 	sinOsc cOscillator;
 	sinOsc gOscillator;
@@ -61,13 +60,13 @@ public:
 	sinOsc aOscillator;
 	sinOsc eOscillator;
 	sinOsc bOscillator;
-	*/
 	float fundamentalFrequency;
 	bool reset = false;
 	float sampleCount;
 	float feedback;
 	float feedbackIncrement;
 	float transitionIncrement = 0.000001;
+	array<float, 2> sample;
 	ofFbo buffer;
 	ofShader shader;
 	float oscillatorASample;
@@ -76,11 +75,6 @@ public:
 	float oscillatorBUnipolar;
 	float ringTotal;
 	float ringAverage;
-	float oscillatorCSample;
-	float oscillatorDSample;
-	float oscillatorCDSample;
-	float sampleCDTotal;
-	float sampleCDAverage;
 	float transitionalSeed;
 	float ring;
 	float frameRate;
