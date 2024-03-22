@@ -8,6 +8,7 @@ uniform vec3 window;
 uniform vec2 oscillators;
 uniform vec4 color;
 uniform vec4 translate;
+uniform float feedback;
 
 float powerScale(float signal){
     float scale = pow(window.z, 0.25);
@@ -126,5 +127,5 @@ void main()
     vec3 filterColor = mix(feedbackColor.rgb, 1.0 - feedbackColor.rgb, abs(ringSum - ringDifference));
     vec3 preProcessed = mix(newColor, filterColor, (1.0 - ring) * ring);
     vec3 processed = vec3(process(preProcessed.r, color.r, powerPhase), process(preProcessed.g, color.g, powerPhase), process(preProcessed.b, color.b, powerPhase));
-    outputColor = vec4(processed, 1.0);
+    outputColor = vec4(mix(processed, processed * feedbackColor.rgb, feedback), 1.0);
 }
