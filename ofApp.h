@@ -12,7 +12,8 @@ public:
 	void ofSoundStreamSetup(ofSoundStreamSettings& settings);
 	void audioOut(ofSoundBuffer& buffer);
 	void checkReset();
-	float getFeedbackFrequency(float sample);
+	void checkFinal();
+	inline float getRingComponent(float sample, float mix);
 	void audioSetup();
 	float getRandomFrequency();
 	float getRandomPhase();
@@ -53,20 +54,14 @@ public:
 	float minimumFloat;
 	sinOsc oscillatorA;
 	sinOsc oscillatorB;
-	sinOsc fOscillator;
-	sinOsc cOscillator;
-	sinOsc gOscillator;
-	sinOsc dOscillator;
-	sinOsc aOscillator;
-	sinOsc eOscillator;
-	sinOsc bOscillator;
+	const float modulatorFrequency = 24.5;
+	const float carrierFrequency = 12.249;
 	float fundamentalFrequency;
 	bool reset = false;
+	bool finalSection = false;
 	float sampleCount;
 	float feedback;
-	float feedbackIncrement;
-	float transitionIncrement = 0.000001;
-	array<float, 2> sample;
+	float transitionIncrement;
 	ofFbo buffer;
 	ofShader shader;
 	float oscillatorASample;
@@ -85,5 +80,5 @@ public:
 	ofVec4f color;
 	ofVec4f translate;
 
-	unsigned int sectionIndex;
+	int sectionIndex = -1;
 };

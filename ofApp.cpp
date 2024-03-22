@@ -3,6 +3,7 @@
 //--------------------------------------------------------------
 void ofApp::setup() {
 	sampleCount = 0.0;
+	feedback = 1.0;
 	audioSetup();
 	videoSetup();
 	sectionSetup();
@@ -57,17 +58,13 @@ void ofApp::audioOut(ofSoundBuffer& buffer) {
 		ring = oscillatorASample * oscillatorBSample;
 		ringTotal += ring;
 		ringAverage = ringTotal / sampleCount;
-		transitionIncrement = abs((ringAverage + minimumFloat) / (pow(frameRate + 1.0, 3.0)));
+		transitionIncrement = abs((ringAverage + minimumFloat) / (pow(frameRate + 1.0, 3.17)));
 		transitionalSeed -= transitionIncrement * transitionalSeed;
 		transitionalValues[1] = transitionalSeed;
 		transitionalValues[2] = 1.0 - transitionalValues[1];
 		transitionalValues[3] = transitionalValues[1] * transitionalValues[2];
 		transitionalValues[0] = 1.0 - transitionalValues[3];
-		for (int b = 0; b < 2; b++) {
-
-		}
-		feedback += feedbackIncrement;
-		sampleCount += feedbackIncrement;
+		checkFinal();
 	}
 }
 
@@ -76,13 +73,19 @@ void ofApp::checkReset() {
 		transitionalSeed = 1.0;
 		sampleCount = 0.0;
 		ringTotal = 0.0;
+		feedback = 0.0;
 		reset = false;
 	}
 }
 
-float ofApp::getFeedbackFrequency(float sample) {
-	float absRing = abs(ring);
-	return (frameRate * ofSign(sample) * pow((abs(sample) + absRing) / (1.0 + absRing), 2.0)) + std::numeric_limits<float>::min();
+void ofApp::checkFinal() {
+	if (finalSection) {
+		feedback = pow(transitionalValues[2], 2.0);
+	}
+}
+
+inline float ofApp::getRingComponent(float sample, float mix) {
+	return (1.0 - mix) + (sample * mix);
 }
 
 void ofApp::audioSetup() {
@@ -91,14 +94,6 @@ void ofApp::audioSetup() {
 	fundamentalFrequency = 1.0 / frameRate;
 	oscillatorA = sinOsc(fundamentalFrequency, getRandomPhase(), 1.0, sampleRate);
 	oscillatorB = sinOsc(fundamentalFrequency / 1.6180339887, getRandomPhase(), 1.0, sampleRate);
-	fOscillator = sinOsc(5.457, 0.0, 0.0, sampleRate);
-	cOscillator = sinOsc(16.352, 0.0, 0.0, sampleRate);
-	gOscillator = sinOsc(48.999, 0.0, 0.0, sampleRate);
-	dOscillator = sinOsc(293.665, 0.0, 0.0, sampleRate);
-	aOscillator = sinOsc(880.0, 0.0, 0.0, sampleRate);
-	eOscillator = sinOsc(2637.02, 0.0, 0.0, sampleRate);
-	bOscillator = sinOsc(7902.133, 0.0, 0.0, sampleRate);
-	feedbackIncrement = 1.0 / (float)sampleRate;
 	transitionalSeed = 1.0;
 	settings.setOutListener(this);
 	settings.sampleRate = sampleRate;
@@ -179,6 +174,7 @@ void ofApp::setUniforms() {
 	shader.setUniform2f("oscillators", oscillators);
 	shader.setUniform4f("translate", translate);
 	shader.setUniform4f("color", color);
+	shader.setUniform1f("feedback", feedback);
 }
 
 void ofApp::beginSection() {
@@ -191,6 +187,7 @@ void ofApp::beginSection() {
 	}
 	if (sectionIndex == 13) {
 		nextSectionValues = defaultSectionValues;
+		finalSection = true;
 	}
 	else {
 		nextSectionValues = sectionValues[sectionIndex + 1];
